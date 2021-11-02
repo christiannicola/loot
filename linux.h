@@ -3,10 +3,4 @@
  * All rights reserved.
  */
 
-#include "loot.cpp"
-
-int
-main (int argc, char* argv[])
-{
-    return 0;
-}
+#pragma once

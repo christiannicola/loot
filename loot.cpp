@@ -4,23 +4,9 @@
  */
 
 #include "loot.h"
+#include <stdio.h>
 
-static void
-GameUpdateAndRender (game_offscreen_buffer* Buffer)
+extern "C" GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 {
-  // NOTE (c.nicola): debug code for platform architecture
-  uint8* Row = (uint8*)Buffer->Memory;
-  for (int Y = 0; Y < Buffer->Height; ++Y)
-  {
-    uint8* Pixel = reinterpret_cast<uint8*> ((uint32*)Row);
-    for (int X = 0; X < Buffer->Width; ++X)
-    {
-      uint8 Blue = X;
-      uint8 Green = Y;
-
-      *Pixel++ = ((Green << 8) | Blue);
-    }
-
-    Row += Buffer->Pitch;
-  }
+  fprintf (stdout, "does this work?\n");
 }

@@ -1,4 +1,0 @@
-Language: Cpp
-BasedOnStyle: GNU
-PointerAlignment: Left
-BreakBeforeBraces: Allman
