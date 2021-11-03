@@ -1,0 +1,8 @@
+Language: Cpp
+BasedOnStyle: GNU
+PointerAlignment: Left
+BreakBeforeBraces: Allman
+IndentWidth: 4
+ColumnLimit: 180
+AllowShortFunctionsOnASingleLine: InlineOnly
+SpaceBeforeParens: Never

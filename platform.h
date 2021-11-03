@@ -32,24 +32,10 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
-#if ENABLE_ASSERTS
-#if __has_builtin(__builtin_trap)
-#define Assert(Expression)                                                     \
-  if (!(Expression)) {                                                         \
-    __builtin_trap();                                                          \
-  }
-#else
-// NOTE (c.nicola): Writing to nullptr == ghetto __builtin_trap
-#define Assert(Expression)                                                     \
-  if (!(Expression)) {                                                         \
-    *(int *)0 = 0;                                                             \
-  }
-#endif
-#endif
-
-typedef struct game_memory {
-  void *Memory;
+typedef struct game_memory
+{
+    void* Memory;
 } game_memory;
 
-#define GAME_UPDATE_AND_RENDER(name) void name(game_memory *Memory)
+#define GAME_UPDATE_AND_RENDER(name) void name(game_memory* Memory)
 typedef GAME_UPDATE_AND_RENDER(game_update_and_render);

@@ -2,19 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 project(loot VERSION 0.0)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED true)
-
-option(ENABLE_ASSERTS "Enable debug assertions" ON)
-
-if(ENABLE_ASSERTS)
-    add_compile_options("-DENABLE_ASSERTS=1")
-endif(ENABLE_ASSERTS)
-
 if (MSVC OR MSYS OR MINGW)
     set(LIBRARY_NAME ${PROJECT_NAME}.dll)
 
-    add_compile_options("-O2" "-g" "-std=c++11" "-ffast-math")
+    add_compile_options("-O2" "-g" "-ffast-math")
 
     add_library(${LIBRARY_NAME} SHARED loot.cpp)
 
@@ -24,15 +15,13 @@ if (MSVC OR MSYS OR MINGW)
 endif()
 
 if (UNIX AND NOT APPLE)
-    set(LIBRARY_NAME lib${PROJECT_NAME}.so)
+    add_compile_options("-O2" "-g" "-ffast-math")
 
-    add_compile_options("-O2" "-g" "-std=c++11" "-ffast-math")
+    add_library(${PROJECT_NAME} SHARED loot.cpp)
 
-    add_library(${LIBRARY_NAME} SHARED loot.cpp)
+    add_executable(${PROJECT_NAME}_linux linux.cpp)
 
-    add_executable(${PROJECT_NAME} linux.cpp)
-
-    target_link_libraries(${PROJECT_NAME} ${LIBRARY_NAME} pthread X11 dl GL)
+    target_link_libraries(${PROJECT_NAME}_linux pthread X11 dl GL)
 endif()
 
 if (APPLE)
