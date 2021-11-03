@@ -6,6 +6,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <cstdlib>
 
 // clang-format off
 #ifndef __has_builtin

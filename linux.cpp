@@ -9,10 +9,10 @@
 
 #include <GL/glx.h>
 #include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <dlfcn.h> // dlopen, dlsym, dlclose
-#include <stdio.h> // fprintf, stderr
+#include <dlfcn.h>
+#include <cstdio>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 global_variable linux_state GlobalLinuxState;
@@ -52,7 +52,7 @@ LinuxLoadFunction(void* LibHandle, const char* Name)
 internal void
 LinuxUnloadLibrary(void* Handle)
 {
-    if(!Handle)
+    if(Handle)
     {
         dlclose(Handle);
         Handle = NULL;
@@ -70,6 +70,57 @@ internal void
 LinuxBuildPathFromFileAndCWD(linux_state* State, const char* FileName, char* Dest)
 {
     sprintf(Dest, "%s/%s", State->WorkingDirectory, FileName);
+}
+
+internal inline ino_t
+LinuxFileID(char* FileName)
+{
+    struct stat Attr = {};
+    if (stat(FileName, &Attr))
+    {
+        Attr.st_ino = 0;
+    }
+
+    return Attr.st_ino;
+}
+
+internal bool
+LinuxLoadGameCode(linux_game_code* GameCode, char* LibName, ino_t FileID)
+{
+    if(GameCode->GameLibID != FileID)
+    {
+        LinuxUnloadLibrary(GameCode->GameLibHandle);
+        GameCode->GameLibID = FileID;
+        GameCode->IsValid = false;
+
+        GameCode->GameLibHandle = LinuxLoadLibrary(LibName);
+
+        if(GameCode->GameLibHandle)
+        {
+            *(void**)(&GameCode->UpdateAndRender) = LinuxLoadFunction(GameCode->GameLibHandle, "GameUpdateAndRender");
+
+            GameCode->IsValid = GameCode->UpdateAndRender != nullptr;
+        }
+    }
+
+    if(!GameCode->IsValid)
+    {
+        LinuxUnloadLibrary(GameCode->GameLibHandle);
+        GameCode->GameLibID = 0;
+        GameCode->UpdateAndRender = nullptr;
+    }
+
+    return (GameCode->IsValid);
+}
+
+internal void
+LinuxUnloadGameCode(linux_game_code* GameCode)
+{
+    LinuxUnloadLibrary(GameCode->GameLibHandle);
+
+    GameCode->GameLibID = 0;
+    GameCode->IsValid = false;
+    GameCode->UpdateAndRender = nullptr;
 }
 
 internal linux_offscreen_buffer
@@ -258,23 +309,38 @@ main(int argc, char* argv[])
     XSetWMProtocols(InternalDisplay, GLWindow, &WMDeleteWindow, 1);
     XMapRaised(InternalDisplay, GLWindow);
 
-
-    // Game loop
     LinuxGetBinFileNameAndCWD(&GlobalLinuxState);
 
     char SourceGameCodeLibFullPath[LINUX_STATE_FILE_NAME_COUNT];
     LinuxBuildPathFromFileAndCWD(&GlobalLinuxState, "libloot.so", SourceGameCodeLibFullPath);
 
-    void* LibraryHandle = LinuxLoadLibrary(SourceGameCodeLibFullPath);
+    linux_game_code Game = {};
 
-    linux_game_code GameCode = {};
-    *(void**)(&GameCode.UpdateAndRender) = LinuxLoadFunction(LibraryHandle, "GameUpdateAndRender");
+    LinuxLoadGameCode(&Game, SourceGameCodeLibFullPath, LinuxFileID(SourceGameCodeLibFullPath));
 
     game_memory Memory = {};
 
     while(GlobalIsRunning)
     {
+        // NOTE (c.nicola): Check if game library needs to be reloaded
+        ino_t GameLibID = LinuxFileID(SourceGameCodeLibFullPath);
+        bool LibNeedsToBeReloaded = (GameLibID != Game.GameLibID);
+
+        if (LibNeedsToBeReloaded)
+        {
+            bool IsValid = false;
+            for (uint32 LoadTryIndex = 0; !IsValid && (LoadTryIndex < 100); ++LoadTryIndex)
+            {
+                fprintf(stdout, "try reloading lib, attempt %d\n", LoadTryIndex);
+                IsValid = LinuxLoadGameCode(&Game, SourceGameCodeLibFullPath, GameLibID);
+                usleep(100000);
+            }
+        }
+
         LinuxProcessPendingMessages(InternalDisplay, WMDeleteWindow);
-        GameCode.UpdateAndRender(&Memory);
+
+        Game.UpdateAndRender(&Memory);
     }
+
+    LinuxUnloadGameCode(&Game);
 }

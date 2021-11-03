@@ -17,7 +17,12 @@ struct linux_state
 
 struct linux_game_code
 {
+    void* GameLibHandle;
+    ino_t GameLibID;
+
     game_update_and_render* UpdateAndRender;
+
+    bool IsValid;
 };
 
 struct linux_offscreen_buffer
