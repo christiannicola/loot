@@ -19,3 +19,11 @@ struct linux_game_code
 {
     game_update_and_render* UpdateAndRender;
 };
+
+struct linux_offscreen_buffer
+{
+    uint32 Width;
+    uint32 Height;
+    uint32 Pitch;
+    uint8* Memory;
+};

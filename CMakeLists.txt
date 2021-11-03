@@ -2,10 +2,16 @@ cmake_minimum_required(VERSION 3.10)
 
 project(loot VERSION 0.0)
 
+option(ENABLE_ASSERTS "Enable debug asserts" ON)
+
+if (ENABLE_ASSERTS)
+    add_compile_options("-DENABLE_ASSERTS=1")
+endif(ENABLE_ASSERTS)
+
 if (MSVC OR MSYS OR MINGW)
     set(LIBRARY_NAME ${PROJECT_NAME}.dll)
 
-    add_compile_options("-O2" "-g" "-ffast-math")
+    add_compile_options("-g" "-ffast-math")
 
     add_library(${LIBRARY_NAME} SHARED loot.cpp)
 
@@ -15,7 +21,7 @@ if (MSVC OR MSYS OR MINGW)
 endif()
 
 if (UNIX AND NOT APPLE)
-    add_compile_options("-O2" "-g" "-ffast-math")
+    add_compile_options("-g" "-ffast-math")
 
     add_library(${PROJECT_NAME} SHARED loot.cpp)
 
