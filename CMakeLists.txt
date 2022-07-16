@@ -2,30 +2,28 @@ cmake_minimum_required(VERSION 3.10)
 
 project(loot VERSION 0.0)
 
+set(CMAKE_CXX_STANDARD 98)
+
 option(ENABLE_ASSERTS "Enable debug asserts" ON)
+
+add_library(game SHARED loot.cpp)
 
 if (ENABLE_ASSERTS)
     add_compile_options("-DENABLE_ASSERTS=1")
 endif(ENABLE_ASSERTS)
 
 if (MSVC OR MSYS OR MINGW)
-    set(LIBRARY_NAME ${PROJECT_NAME}.dll)
+    add_compile_options("/W3")
 
-    add_compile_options("-g" "-ffast-math")
+    add_executable(${PROJECT_NAME} WIN32 win32_platform.cpp)
 
-    add_library(${LIBRARY_NAME} SHARED loot.cpp)
-
-    add_executable(${PROJECT_NAME}.exe win32.cpp)
-
-    target_link_libraries(${PROJECT_NAME} user32.lib gdi32.lib winm.lib opengl32.lib)
+    target_link_libraries(${PROJECT_NAME} user32.lib gdi32.lib winmm.lib)
 endif()
 
 if (UNIX AND NOT APPLE)
-    add_compile_options("-g" "-ffast-math")
+    add_compile_options("-g" "-ffast-math" "-Wall")
 
-    add_library(${PROJECT_NAME} SHARED loot.cpp)
-
-    add_executable(${PROJECT_NAME}_linux linux.cpp)
+    add_executable(${PROJECT_NAME} linux_platform.cpp)
 
     target_link_libraries(${PROJECT_NAME}_linux pthread X11 dl GL)
 endif()

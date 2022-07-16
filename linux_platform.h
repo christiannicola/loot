@@ -3,9 +3,10 @@
  * All rights reserved.
  */
 
-#pragma once
+#ifndef LINUX_PLATFORM_H
+#define LINUX_PLATFORM_H
 
-#include "platform.h"
+#include "loot.h"
 
 #define LINUX_STATE_FILE_NAME_COUNT 512
 
@@ -32,3 +33,5 @@ struct linux_offscreen_buffer
     uint32 Pitch;
     uint8* Memory;
 };
+
+#endif//LINUX_PLATFORM_H

@@ -3,9 +3,7 @@
  * All rights reserved.
  */
 
-#include "linux.h"
-#include "platform.h"
-#include "types.h"
+#include "linux_platform.h"
 
 #include <GL/glx.h>
 #include <X11/Xlib.h>
