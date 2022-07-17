@@ -32,7 +32,11 @@
 #define global_variable static
 
 #ifndef LOOT_API
+#if !defined(_WIN32)
+#define LOOT_API
+#else
 #define LOOT_API __declspec(dllexport)
+#endif
 #endif
 
 #define Pi32 3.14159265359f

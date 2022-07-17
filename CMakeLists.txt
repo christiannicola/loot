@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(loot VERSION 0.0)
 
-set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD 11)
 
 option(ENABLE_ASSERTS "Enable debug asserts" ON)
 
@@ -25,7 +25,7 @@ if (UNIX AND NOT APPLE)
 
     add_executable(${PROJECT_NAME} linux_platform.cpp)
 
-    target_link_libraries(${PROJECT_NAME}_linux pthread X11 dl GL)
+    target_link_libraries(${PROJECT_NAME} pthread X11 dl GL)
 endif()
 
 if (APPLE)

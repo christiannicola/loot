@@ -4,7 +4,7 @@
  */
 
 #include "loot.h"
-#include <cstdio>
+#include <cmath>
 
 internal void GameOutputSound(game_state* GameState, game_sound_output_buffer* SoundBuffer, int ToneHz)
 {

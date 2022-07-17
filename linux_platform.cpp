@@ -307,16 +307,30 @@ main(int argc, char* argv[])
     XSetWMProtocols(InternalDisplay, GLWindow, &WMDeleteWindow, 1);
     XMapRaised(InternalDisplay, GLWindow);
 
+	LinuxResizeOffscreenBuffer(&GlobalBackBuffer, 1280, 720);
     LinuxGetBinFileNameAndCWD(&GlobalLinuxState);
 
     char SourceGameCodeLibFullPath[LINUX_STATE_FILE_NAME_COUNT];
-    LinuxBuildPathFromFileAndCWD(&GlobalLinuxState, "libloot.so", SourceGameCodeLibFullPath);
+    LinuxBuildPathFromFileAndCWD(&GlobalLinuxState, "libgame.so", SourceGameCodeLibFullPath);
 
     linux_game_code Game = {};
 
     LinuxLoadGameCode(&Game, SourceGameCodeLibFullPath, LinuxFileID(SourceGameCodeLibFullPath));
 
-    game_memory Memory = {};
+    game_memory GameMemory = {};
+	GameMemory.PermanentStorageSize = Megabytes(64);
+	GameMemory.TransientStorageSize = Megabytes(64);
+
+	uint64 TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
+
+	GameMemory.PermanentStorage = mmap(nullptr, TotalSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	GameMemory.TransientStorage = ((uint8*)GameMemory.PermanentStorage + GameMemory.PermanentStorageSize);
+
+	game_offscreen_buffer Buffer = {};
+	Buffer.Memory = GlobalBackBuffer.Memory;
+	Buffer.Width = GlobalBackBuffer.Width;
+	Buffer.Height = GlobalBackBuffer.Height;
+	Buffer.Pitch = GlobalBackBuffer.Pitch;
 
     while(GlobalIsRunning)
     {
@@ -337,7 +351,7 @@ main(int argc, char* argv[])
 
         LinuxProcessPendingMessages(InternalDisplay, WMDeleteWindow);
 
-        Game.UpdateAndRender(&Memory);
+        Game.UpdateAndRender(&GameMemory, &Buffer);
     }
 
     LinuxUnloadGameCode(&Game);
